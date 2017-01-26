@@ -1,8 +1,0 @@
-[TestConfig]
-status_check = True
-dut_ip = 10.3.146.13
-board_name = reef
-
-[ToolPath]
-cros_sdk_path = /home/intel7/google_source
-abs_cros_sdk_path = /home/intel7/depot_tools/cros_sdk
