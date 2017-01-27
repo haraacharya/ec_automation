@@ -96,7 +96,7 @@ class EcTestLib(object):
 			else: 
 				return ec_cmd + " Test Result:  " + "FAIL"
 		else:
-			return ec_cmd + "output" + system_status_check
+			return ec_cmd + " output :" + system_status_check
 			
 
 

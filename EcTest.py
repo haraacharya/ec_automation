@@ -90,3 +90,4 @@ if status_check:
 
 print test.ec_console_test("i2cscan", abs_cros_sdk_path, 'Scanning 4 batt' )
 print test.ec_console_test("powerinfo", abs_cros_sdk_path, 's0' )
+print test.ec_console_test("flashinfo", abs_cros_sdk_path)
