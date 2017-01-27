@@ -91,12 +91,12 @@ class EcTestLib(object):
 		print (system_status_check)
 		if outcome_string:
 			#if system_status_check.find("outcome_string") != -1:
-			if outcome_string in system_status_check:
-				return "PASS"
+			if outcome_string.lower() in system_status_check.lower():
+				return ec_cmd + " Test Result:  " +  "PASS"
 			else: 
-				return "FAIL"
+				return ec_cmd + " Test Result:  " + "FAIL"
 		else:
-			return system_status_check
+			return ec_cmd + "output" + system_status_check
 			
 
 
