@@ -79,7 +79,7 @@ class EcTestLib(object):
 		else:
 			return False
 
-	def ec_console_test(self, ec_cmd, cros_sdk_path):
+	def ec_console_test(self, ec_cmd, cros_sdk_path, outcome_string = ""):
 		ec_uart_capture_enable_command = 'python' + ' ' + cros_sdk_path + ' ' + 'dut-control ec_uart_capture:on'
 		ec_uart_capture_disable_command = 'python' + ' ' + cros_sdk_path + ' ' + 'dut-control ec_uart_capture:off'
 		ec_console_system_status_command = 'python' + ' ' + cros_sdk_path + ' ' + 'dut-control ec_uart_cmd:' + ec_cmd
@@ -88,7 +88,16 @@ class EcTestLib(object):
 		os.system(ec_console_system_status_command)
 		system_status_check = os.popen(ec_console_system_status_output).read()
 		os.system(ec_uart_capture_disable_command)
-		return system_status_check
+		print (system_status_check)
+		if outcome_string:
+			#if system_status_check.find("outcome_string") != -1:
+			if outcome_string in system_status_check:
+				return "PASS"
+			else: 
+				return "FAIL"
+		else:
+			return system_status_check
+			
 
 
 

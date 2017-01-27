@@ -88,4 +88,4 @@ if status_check:
 	status_check()
 
 
-print test.ec_console_test("i2cscan", abs_cros_sdk_path)
+print test.ec_console_test("i2cscan", abs_cros_sdk_path, 'Scanning 4 batt' )
