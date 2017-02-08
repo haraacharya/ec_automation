@@ -51,7 +51,7 @@ logging.info(os.getcwd())
 
 servod_cmd = 'python ' + abs_cros_sdk_path + ' ' + 'sudo ' + 'servod ' + '--board=' + board_name + ' ' + '&'
 os.system(servod_cmd)
-time.sleep(10)
+time.sleep(5)
 
 import subprocess
 output = subprocess.Popen(['pgrep', 'servod'], stdout=subprocess.PIPE).communicate()[0]
