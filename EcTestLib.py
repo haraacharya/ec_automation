@@ -3,6 +3,18 @@ import os
 import time
 import re
 import subprocess
+import ConfigParser
+
+configParser = ConfigParser.RawConfigParser()   
+configFilePath = r'config.txt'
+configParser.read(configFilePath)
+
+status_check = configParser.get('TestConfig', 'status_check')
+dut_ip = configParser.get('TestConfig', 'dut_ip')
+board_name = configParser.get('TestConfig', 'board_name')
+
+cros_sdk_path = configParser.get('ToolPath', 'cros_sdk_path')
+abs_cros_sdk_path = configParser.get('ToolPath', 'abs_cros_sdk_path')
 
 class EcTestLib(object):
 		
@@ -97,8 +109,73 @@ class EcTestLib(object):
 				return ec_cmd + " Test Result:  " + "FAIL"
 		else:
 			return ec_cmd + " output :" + system_status_check
-			
 
+	def run_ec_console_cmd(self, ec_cmd):
+		ec_uart_capture_enable_command = 'python' + ' ' + abs_cros_sdk_path + ' ' + 'dut-control ec_uart_capture:on'
+		ec_uart_capture_disable_command = 'python' + ' ' + abs_cros_sdk_path + ' ' + 'dut-control ec_uart_capture:off'
+		ec_console_system_status_command = 'python' + ' ' + abs_cros_sdk_path + ' ' + 'dut-control ec_uart_cmd:' + ec_cmd
+		ec_console_system_status_output = 'python' + ' ' + abs_cros_sdk_path + ' ' + 'dut-control ec_uart_stream'
+		os.system(ec_uart_capture_enable_command)
+		os.system(ec_console_system_status_command)
+		system_status_check = os.popen(ec_console_system_status_output).read()
+		os.system(ec_uart_capture_disable_command)
+		print ("%s console cmd output is: %s" %(ec_cmd, system_status_check))
+		if system_status_check:
+			return system_status_check
+		else:
+			return False
+
+	#a function to check system status...we can keep adding check points for anything we want inside this function
+	def status_check(self):
+		mainfw_type = self.run_command_on_dut("crossystem mainfw_type", dut_ip)
+		print mainfw_type
+		if mainfw_type.find("developer") != -1:
+			print "System is in Developer mode."
+		else:
+			print "System is in Normal mode"
+
+		wifi_check = self.run_command_on_dut('/usr/sbin/lspci | grep -i "intel corporation wireless"', dut_ip)
+		print wifi_check
+		if wifi_check.find("Intel Corporation Wireless") != -1:
+			print "Wifi detected successfully"
+		else:
+			print "Wifi detection failed. Exiting test."
+			exit()
+	
+
+
+	def ec_test_file_input(self, fname):
+		#read test file and store req, cmd and expected output and # values in a variable
+		
+		with open(fname) as f:
+			content = f.readlines()
+			content = (x.rstrip() for x in content)
+			content = [content for content in content if content]
+		
+		if "cmd" in content:
+			print
+		for i in content:
+			if "cmd" in i:
+				ec_test_command = i.split(':')[1].lstrip()
+			if "req" in i:
+				req_number = i.split(':')[1].lstrip()
+
+		print "ec test command is: %s" %(ec_test_command)
+		print "req is: %s" %(req_number)
+		print ""
+
+		content = [content for content in content if "cmd" not in content]
+		content = [content for content in content if "req" not in content]
+		content = [content for content in content if "expect" not in content]
+		
+		for i in content:
+			i = i.lstrip()
+			print i
+			
+		cmd_output = self.run_ec_console_cmd(ec_test_command)
+		cmd_output = cmd_output.splitlines()
+		print cmd_output
+		
 
 
 

@@ -1,5 +1,5 @@
 [TestConfig]
-status_check = True
+status_check = False
 dut_ip = 10.3.146.13
 board_name = reef
 

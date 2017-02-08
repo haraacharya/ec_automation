@@ -1,0 +1,14 @@
+cmd: charger
+
+req:8656
+
+expect:
+  Name:   bd99956
+  Option: 11011101110111101101000 (0x6eef68) #ignore
+  Man id: (unsupported)
+  Dev id: 0x0342
+  V_batt:  8656 (3072 - 19200,  16)  # >= 6000
+  I_batt:   128 ( 128 - 16320,  64)  # >= 128
+  I_in:     128 ( 512 - 16352,  32)  # >= 128
+  I_dptf:     0                      # >= 0
+
