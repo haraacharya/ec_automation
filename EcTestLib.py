@@ -120,8 +120,9 @@ class EcTestLib(object):
 		system_status_check = os.popen(ec_console_system_status_output).read()
 		os.system(ec_uart_capture_disable_command)
 		system_status_check = re.sub('^ec_uart_stream:', '', system_status_check)
-		
+		print "==========================================================="
 		print system_status_check
+		print "==========================================================="
 		#print ("%s console cmd output is: %s" %(ec_cmd, system_status_check))
 		if system_status_check:
 			return system_status_check
@@ -173,16 +174,19 @@ class EcTestLib(object):
 		
 		for i in content:
 			i = i.lstrip()
+		content = [x.strip(' ') for x in content]
 		print ("Expected is: %s" %(content))
 			
 		cmd_output = self.run_ec_console_cmd(ec_test_command)
 		cmd_output = re.sub("\.+", "", cmd_output)
-		cmd_output = re.sub(r'\\r\\n', "|||", cmd_output)
+		cmd_output = re.sub(r'\\r\\n|\\r\\n\s+|\\r\\n\>', "|||", cmd_output)
+		if re.match(r'\\r\\n', cmd_output):
+			print "it matches"
 		cmd_output = cmd_output.split("|||")
-		for i in cmd_output:
-			if ec_test_command in i:
-				print i
-		#print type(cmd_output)
+		#print type(cmd_output)		
+		if ec_test_command in cmd_output[0]:
+			del cmd_output[0]
+		cmd_output = [x.strip(' ') for x in cmd_output]
 		print ("Actual output: %s"%(cmd_output))
 		
 
