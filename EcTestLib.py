@@ -3,6 +3,8 @@ import os
 import time
 import re
 import subprocess
+import signal
+import sys
 import ConfigParser
 
 configParser = ConfigParser.RawConfigParser()   
@@ -41,6 +43,22 @@ class EcTestLib(object):
 			return out
 		else:
 			return False	
+
+	def copy_file_from_host_to_dut(self, src,dst, dut_ip):
+		client = paramiko.SSHClient()
+		client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+		client.connect(dut_ip, username='root', password='test0000')
+
+		sftp = client.open_sftp()
+		sftp.put(src, dst)		
+		sftp.close()
+
+		if self.run_command_on_dut("ls -l " + dst, dut_ip):	
+			print ("File copy successfull")	
+			return True
+		else:
+			print ("File copy unsuccessfull")	
+			return False
 
 
 	def check_if_dut_is_live(self, dut_ip):
@@ -180,18 +198,54 @@ class EcTestLib(object):
 		cmd_output = self.run_ec_console_cmd(ec_test_command)
 		cmd_output = re.sub("\.+", "", cmd_output)
 		cmd_output = re.sub(r'\\r\\n|\\r\\n\s+|\\r\\n\>', "|||", cmd_output)
-		if re.match(r'\\r\\n', cmd_output):
-			print "it matches"
+		
 		cmd_output = cmd_output.split("|||")
 		#print type(cmd_output)		
 		if ec_test_command in cmd_output[0]:
 			del cmd_output[0]
 		cmd_output = [x.strip(' ') for x in cmd_output]
 		print ("Actual output: %s"%(cmd_output))
+		for i in cmd_output:
+			if re.match(r'\\n', i):
+				print "it matches"
+				print i
 		
 
 
+	def start_servod(self):
+		#script_working_directory = os.getcwd()
+		
+		os.system("pgrep servod | xargs sudo kill -9")
+		import subprocess
+		p = subprocess.Popen('pgrep servod', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		retval = p.wait()
+		out, err = p.communicate()
 
+		if out:
+			servod_pid = int(out.strip())
+			print('servod Process found. Terminating it.')	
+			os.kill(servod_pid, signal.SIGKILL)
+
+		print('starting a fresh servod...')
+		
+
+		os.chdir(cros_sdk_path)	
+		print os.getcwd()
+		
+
+		servod_cmd = 'python ' + abs_cros_sdk_path + ' ' + 'sudo ' + 'servod ' + '--board=' + board_name + ' ' + '&'
+		os.system(servod_cmd)
+		time.sleep(5)
+
+		import subprocess
+		output = subprocess.Popen(['pgrep', 'servod'], stdout=subprocess.PIPE).communicate()[0]
+
+		if output:
+			#print "Servod started successfully"
+			return True
+		else:
+			#print "Servod couldn't start successfully. Exiting test."
+			return False
 
 
 

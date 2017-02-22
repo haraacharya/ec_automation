@@ -4,23 +4,10 @@ import sys
 import time
 import signal
 from EcTestLib import *
-#from EcTestLib import EcTestLib *
 from datetime import datetime
 import logging
 import logging.handlers
 import ConfigParser
-
-
-configParser = ConfigParser.RawConfigParser()   
-configFilePath = r'config.txt'
-configParser.read(configFilePath)
-
-status_check = configParser.getboolean('TestConfig', 'status_check')
-dut_ip = configParser.get('TestConfig', 'dut_ip')
-board_name = configParser.get('TestConfig', 'board_name')
-
-cros_sdk_path = configParser.get('ToolPath', 'cros_sdk_path')
-abs_cros_sdk_path = configParser.get('ToolPath', 'abs_cros_sdk_path')
 
  
 LOG_DIR = datetime.now().strftime('ec_test_log_time_%H_%M_day_%d_%m_%Y')
@@ -53,14 +40,13 @@ servod_cmd = 'python ' + abs_cros_sdk_path + ' ' + 'sudo ' + 'servod ' + '--boar
 os.system(servod_cmd)
 time.sleep(5)
 
-import subprocess
 output = subprocess.Popen(['pgrep', 'servod'], stdout=subprocess.PIPE).communicate()[0]
 
 if output:
 	print "Servod started successfully"
 	logging.info("Servod started successfully")
 else:
-	print "Servod couldn't be started successfully. Exiting test."
+	print "Servod couldn't start successfully. Exiting test."
 	logging.error("Servod couldn't be started successfully. Exiting test.")
 	#exit()
 

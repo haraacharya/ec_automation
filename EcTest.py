@@ -15,6 +15,8 @@ LOG_FILENAME_STR = os.path.abspath(LOG_FILENAME)
 print ("Log file name is: %s"% LOG_FILENAME)
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG, )
 
+ec_test_location = os.getcwd()
+
 #CONFIG PARAMETERS
 configParser = ConfigParser.RawConfigParser()   
 configFilePath = r'config.txt'
@@ -88,7 +90,20 @@ if status_check:
 	status_check()
 
 
+if test.copy_file_from_host_to_dut(ec_test_location + "/desktopui_SimpleLogin.tar.gz", "/tmp/desktopui_SimpleLogin.tar.gz", dut_ip):
+	print "desktopui_SimpleLogin.tar.gz copied successfully."
+
+unzip_test_file = test.run_command_on_dut("tar -zxvf /tmp/desktopui_SimpleLogin.tar.gz -C /usr/local/autotest/tests/", dut_ip)
+
+
+proc = subprocess.Popen([test.run_command_on_dut("/usr/local/autotest/bin/autotest_client /usr/local/autotest/tests/desktopui_SimpleLogin/control", dut_ip)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE).pid
+print ("Waiting for 20 seconds for the DUT to login successfully")
+time.sleep(20)
+
+if test.run_command_on_dut("ls -l /home/chronos/user | grep -i Downloads", dut_ip):
+	print "System login Successful"
+else:
+	print "Not able to login to the system. Will try again before exiting the test"
+
 print test.ec_console_test("i2cscan", abs_cros_sdk_path, 'Scanning 4 batt' )
-print test.ec_console_test("powerinfo", abs_cros_sdk_path, 's0' )
-print test.ec_console_test("flashinfo", abs_cros_sdk_path)
-print test.ec_console_test("charger", abs_cros_sdk_path, "8688")
+
