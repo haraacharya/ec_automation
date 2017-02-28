@@ -44,8 +44,8 @@ if status_check:
 		print "System rebooted successfully"
 		if test.dut_login_if_not_loggedin():
 			#print "System login successfull"
-			test.ec_console_test('powerbtn 4000', abs_cros_sdk_path, outcome_string = "")	
-			print test.ec_console_test('powerinfo', abs_cros_sdk_path, outcome_string = "s3")
+			test.ec_console_test('pd 0 state', abs_cros_sdk_path, outcome_string = "")	
+			print test.ec_console_test('powerinfo', abs_cros_sdk_path, outcome_string = "s0")
 		else:
 			print "Exiting test as system couldn't login"
 			logging.error("Unable to login to DUT")

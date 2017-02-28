@@ -18,6 +18,8 @@ board_name = configParser.get('TestConfig', 'board_name')
 cros_sdk_path = configParser.get('ToolPath', 'cros_sdk_path')
 abs_cros_sdk_path = configParser.get('ToolPath', 'abs_cros_sdk_path')
 
+ec_test_lib_location = os.getcwd()
+
 class EcTestLib(object):
 		
 	def run_command_on_dut(self, command, dut_ip):
@@ -112,10 +114,11 @@ class EcTestLib(object):
 	def ec_console_test(self, ec_cmd, cros_sdk_path, outcome_string = ""):
 		ec_uart_capture_enable_command = 'python' + ' ' + cros_sdk_path + ' ' + 'dut-control ec_uart_capture:on'
 		ec_uart_capture_disable_command = 'python' + ' ' + cros_sdk_path + ' ' + 'dut-control ec_uart_capture:off'
-		ec_console_system_status_command = 'python' + ' ' + cros_sdk_path + ' ' + 'dut-control ec_uart_cmd:' + ec_cmd
+		ec_console_system_status_command = 'python' + ' ' + cros_sdk_path + ' ' + 'dut-control ec_uart_cmd:' + "'" + ec_cmd + "'"
 		ec_console_system_status_output = 'python' + ' ' + cros_sdk_path + ' ' + 'dut-control ec_uart_stream'
 		os.system(ec_uart_capture_enable_command)
 		os.system(ec_console_system_status_command)
+		time.sleep(30)
 		system_status_check = os.popen(ec_console_system_status_output).read()
 		os.system(ec_uart_capture_disable_command)
 		print (system_status_check)
@@ -124,7 +127,7 @@ class EcTestLib(object):
 			if outcome_string.lower() in system_status_check.lower():
 				return ec_cmd + " Test Result:  " +  "PASS"
 			else: 
-				return ec_cmd + " Test Result:  " + "FAIL"
+				return ec_cmd + " Test Result:  " + "FAIL. " + "EXPECTED: " + outcome_string
 		else:
 			return ec_cmd + " output :" + system_status_check
 
@@ -210,7 +213,8 @@ class EcTestLib(object):
 				print "it matches"
 				print i
 		
-
+	#def get_value_out_of_ec_console_command():
+		
 
 	def start_servod(self):
 		#script_working_directory = os.getcwd()
@@ -248,5 +252,24 @@ class EcTestLib(object):
 			return False
 
 
+	def dut_login_if_not_loggedin(self):
+		if self.run_command_on_dut("ls -l /home/chronos/user | grep -i Downloads", dut_ip):
+			print "System already logged in"
+			return True
+
+		if self.copy_file_from_host_to_dut(ec_test_lib_location + "/desktopui_SimpleLogin.tar.gz", "/tmp/desktopui_SimpleLogin.tar.gz", dut_ip):
+			print "desktopui_SimpleLogin.tar.gz copied successfully."
+
+		unzip_test_file = self.run_command_on_dut("tar -zxvf /tmp/desktopui_SimpleLogin.tar.gz -C /usr/local/autotest/tests/", dut_ip)
+		proc = subprocess.Popen([self.run_command_on_dut("/usr/local/autotest/bin/autotest_client /usr/local/autotest/tests/desktopui_SimpleLogin/control", dut_ip)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE).pid
+		print ("Waiting 25 seconds for the DUT to login successfully")
+		time.sleep(25)
+
+		if self.run_command_on_dut("ls -l /home/chronos/user | grep -i Downloads", dut_ip):
+			print "System login Successful"
+			return True
+		else:
+			print "Not able to login to the system. Will try again before exiting the test"
+			return False
 
 
