@@ -46,6 +46,17 @@ class EcTestLib(object):
 		else:
 			return False	
 
+	def non_blocking_run_command_on_dut(self, command, dut_ip):
+		client = paramiko.SSHClient()
+		client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+		client.connect(dut_ip, username='root', password='test0000')
+		client.exec_command(command)
+		#command_exit_status = stdout.channel.recv_exit_status()
+		
+		client.close()
+		#print command_exit_status
+		
+
 	def copy_file_from_host_to_dut(self, src,dst, dut_ip):
 		client = paramiko.SSHClient()
 		client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

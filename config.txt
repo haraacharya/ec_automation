@@ -1,6 +1,6 @@
 [TestConfig]
 status_check = False
-dut_ip = 10.3.146.13
+dut_ip = 10.3.146.15
 board_name = reef
 
 [ToolPath]
